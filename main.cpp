@@ -87,7 +87,7 @@ void loop()
     chatHistory[start%5] = curr_convo;
     Serial.println(chatHistory[0]);
 
-    //append all history to send to chatgpt and appends question last
+    //append all history, and append the new question last, to format the string correctly for API
     history="";
     int index;
     history = "[";
