@@ -7,6 +7,7 @@
 #include <SD_MMC.h>
 #include <SPIFFS.h>
 #include <FFat.h>
+#include <WiFiManager.h>
 #include <ArduinoJson.h>
 #include "Audio.h"
 
@@ -92,9 +93,21 @@ void setup()
   while (!Serial);
 
   // wait for WiFi connection
-  WiFi.begin(ssid, password);
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
+  //WiFi.begin(ssid, password);
+
+  WiFiManager wm;
+
+  wm.resetSettings();
+
+  bool res;
+
+  res = wm.autoConnect("LLM Assistant" , "Password");
+
+  if(!res){
+    Serial.println("Failed to connect");
+  }
+
+
   
   while (WiFi.status() != WL_CONNECTED) 
   {
