@@ -255,124 +255,120 @@ void setup()
 
 void loop()
 {
-    Serial.print("Ask your Question: ");
-    while (!Serial.available())
+    if (MySerial.available())
     {
-      audio.loop();
-    }
-    while (Serial.available())
-    {
-        char add = Serial.read();
-        question = question + add;
-        delay(1);
-    }
-    question.trim();
+        question = MySerial.readStringUntil('\n');
+    
+        question.trim();
 
-    toLowerCase(question);
-    if(question == "delete history" || question =="reset history"){
-        reset_history();
-        question = "say 'History has been deleted'";
-    }
+        Serial.println("Received Question: " + question);
 
-    String context = find_question_context(question);
-    bool question_rag_data_included[N];
-    for(int i=0;i<N;i++){
-        question_rag_data_included[i] = rag_data_included[i];
-    }
-    context += extra_history_context();
-    Serial.println("Possibly useful data:\n" + context);
+        toLowerCase(question);
+        if(question == "delete history" || question =="reset history"){
+            reset_history();
+            question = "say 'History has been deleted'";
+        }
 
-    String history;
-    for(int i=0; i < CHAT_HISTORY_SIZE; i++) {
-        int index = (start + i) % CHAT_HISTORY_SIZE;
-        history += chat_history[index];
-    }
-    Serial.println("History:\n" + history);
+        String context = find_question_context(question);
+        bool question_rag_data_included[N];
+        for(int i=0;i<N;i++){
+            question_rag_data_included[i] = rag_data_included[i];
+        }
+        context += extra_history_context();
+        Serial.println("Possibly useful data:\n" + context);
 
-    String message;
+        String history;
+        for(int i=0; i < CHAT_HISTORY_SIZE; i++) {
+            int index = (start + i) % CHAT_HISTORY_SIZE;
+            history += chat_history[index];
+        }
+        Serial.println("History:\n" + history);
 
-    String instructions;
+        String message;
 
-    instructions += "Instructions: ";
-    instructions += "you are an LLM assistant. ";
-    instructions += "I will provide our conversation history, and some data that may be relevant to our conversation. ";
-    instructions += "if the conversation is directly related to the data I provided, use it to answer. ";
-    instructions += "keep your answer under 25 words. ";
-    instructions += "no need to add 'You:' before your answer. ";
-    instructions += "be concise with you answer. ";
-    instructions += "don't ask question that are unrelated to the current conversation. ";
+        String instructions;
 
-    message += "Conversation History: " + history;
+        instructions += "Instructions: ";
+        instructions += "you are an LLM assistant. ";
+        instructions += "I will provide our conversation history, and some data that may be relevant to our conversation. ";
+        instructions += "if the conversation is directly related to the data I provided, use it to answer. ";
+        instructions += "keep your answer under 25 words. ";
+        instructions += "no need to add 'You:' before your answer. ";
+        instructions += "be concise with you answer. ";
+        instructions += "don't ask question that are unrelated to the current conversation. ";
 
-    message += "Data: " + rag_data[GENERAL] + context;
+        message += "Conversation History: " + history;
 
-    message += "Current Conversation: Me: " + question + " ";
+        message += "Data: " + rag_data[GENERAL] + context;
+
+        message += "Current Conversation: Me: " + question + " ";
 
 
-    Serial.println("Message for ChatGpt:\n" + message);
+        Serial.println("Message for ChatGpt:\n" + message);
 
 
-    message = "\"" + message + "\"";
+        message = "\"" + message + "\"";
 
-    HTTPClient https;
+        HTTPClient https;
 
-    Serial.print("[HTTPS] begin...\n");
-    if (https.begin("https://api.openai.com/v1/chat/completions")) {  // HTTPS
+        Serial.print("[HTTPS] begin...\n");
+        if (https.begin("https://api.openai.com/v1/chat/completions")) {  // HTTPS
 
-        https.addHeader("Content-Type", "application/json");
-        String token_key = String("Bearer ") + chatgpt_token;
-        https.addHeader("Authorization", token_key);
+            https.addHeader("Content-Type", "application/json");
+            String token_key = String("Bearer ") + chatgpt_token;
+            https.addHeader("Authorization", token_key);
 
-        String escapedMessage = message;
-        escapedMessage.replace("\"", "\\\"");
+            String escapedMessage = message;
+            escapedMessage.replace("\"", "\\\"");
 
-        String payload = String("{\"model\": \"gpt-3.5-turbo\", \"messages\": [") +
-                         "{\"role\": \"system\", \"content\": \"" + instructions + "\"}, " +
-                         "{\"role\": \"user\", \"content\": \"" + escapedMessage + "\"}], " +
-                         "\"temperature\": " + temperature + ", " +
-                         "\"max_tokens\": " + max_tokens + "}";
+            String payload = String("{\"model\": \"gpt-3.5-turbo\", \"messages\": [") +
+                            "{\"role\": \"system\", \"content\": \"" + instructions + "\"}, " +
+                            "{\"role\": \"user\", \"content\": \"" + escapedMessage + "\"}], " +
+                            "\"temperature\": " + temperature + ", " +
+                            "\"max_tokens\": " + max_tokens + "}";
 
-        Serial.print("[HTTPS] GET...\n");
-        Serial.print("[HTTPS] POST...\n");
-        Serial.print("Payload: ");
-        Serial.println(payload);
-        // start connection and send HTTP header
-        int httpCode = https.POST(payload);
+            Serial.print("[HTTPS] GET...\n");
+            Serial.print("[HTTPS] POST...\n");
+            Serial.print("Payload: ");
+            Serial.println(payload);
+            // start connection and send HTTP header
+            int httpCode = https.POST(payload);
 
-        // httpCode will be negative on error
-        // file found at server
-        if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
-            String payload = https.getString();
-            //Serial.println(payload);
+            // httpCode will be negative on error
+            // file found at server
+            if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
+                String payload = https.getString();
+                //Serial.println(payload);
 
-            DynamicJsonDocument doc(16384);
+                DynamicJsonDocument doc(16384);
 
-            deserializeJson(doc, payload);
-            String answer = doc["choices"][0]["message"]["content"];
-            Serial.print("Answer : "); Serial.println(answer);
+                deserializeJson(doc, payload);
+                String answer = doc["choices"][0]["message"]["content"];
+                Serial.print("Answer : "); Serial.println(answer);
 
-            audio.connecttospeech(answer.c_str(), "en");
+                audio.connecttospeech(answer.c_str(), "en");
 
 
-            String question_and_answer = "Me: " + question + " ";
-            question_and_answer += "You: " + answer + " ";
-            chat_history[start] = question_and_answer;
-            for(int i=0;i<N;i++){
-                history_rag_data_included[start][i] = question_rag_data_included[i];
+                String question_and_answer = "Me: " + question + " ";
+                question_and_answer += "You: " + answer + " ";
+                chat_history[start] = question_and_answer;
+                for(int i=0;i<N;i++){
+                    history_rag_data_included[start][i] = question_rag_data_included[i];
+                }
+                start++;
+                start = start % CHAT_HISTORY_SIZE;
             }
-            start++;
-            start = start % CHAT_HISTORY_SIZE;
+            else {
+                Serial.printf("[HTTPS] GET... failed, error: %s\n", https.errorToString(httpCode).c_str());
+            }
+            https.end();
         }
         else {
-            Serial.printf("[HTTPS] GET... failed, error: %s\n", https.errorToString(httpCode).c_str());
+            Serial.printf("[HTTPS] Unable to connect\n");
         }
-        https.end();
-    }
-    else {
-        Serial.printf("[HTTPS] Unable to connect\n");
-    }
-
     question = "";
     message = "";
+    }
+    audio.loop();
 }
 
