@@ -1,8 +1,7 @@
 #ifndef _NETWORK_PARAM_H
 #define _NETWORK_PARAM_H
 
-const char*ssid = "";
-const char* password = "";
+
 const char*  server = "speech.googleapis.com";
 
 // To get the certificate for your region run:
@@ -44,7 +43,7 @@ const char* root_ca =
 //const String AccessToken = "";
 
 // It is also possible to use "API Key" instead of "Access Token". It doesn't have time limit.
-const String ApiKey = "";
+const String ApiKey = "AIzaSyDLV5lz4hdITwJ9aTTT80KsLcqQ9HJpdUc";
 
 // see https://cloud.google.com/docs/authentication?hl=ja#getting_credentials_for_server-centric_flow
 // see https://qiita.com/basi/items/3623a576b754f738138e (Japanese)
