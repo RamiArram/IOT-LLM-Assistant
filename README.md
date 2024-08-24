@@ -7,3 +7,6 @@ lib_deps =
 	adafruit/Adafruit BusIO@^1.16.1
 	bblanchon/ArduinoJson@^7.1.0
 	https://github.com/tzapu/WiFiManager/archive/refs/heads/master.zip
+
+
+OLED : https://github.com/adafruit/Adafruit_SH110x/tree/master
