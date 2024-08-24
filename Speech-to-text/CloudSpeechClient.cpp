@@ -11,7 +11,9 @@
 #define led_3 4
 #define led_1 15
 #define led_2 2
+
 const char* chatgpt_token = "Your_ChatGPT_Token";
+
 CloudSpeechClient::CloudSpeechClient(Authentication authentication, const char* ssid, const char* password) 
 {
   this->authentication = authentication;
@@ -22,14 +24,14 @@ CloudSpeechClient::CloudSpeechClient(Authentication authentication, const char* 
   Serial.println("Connecting to wifi");
   while (WiFi.status() != WL_CONNECTED){ 
     Serial.println(".");
-    delay(1000);
+    delay(100);
   }
   Serial.print("Connected to wifi");
   
   client.setCACert(root_ca); // Set your root CA certificate here
   client.setInsecure();      // Accept any SSL certificate, including self-signed
 
-  if (!client.connect(server, 443)) Serial.println("Connection failed!");
+  if (!client.connect(server, 443)) display.println("Connection failed!");
 }
 
 String ans;
@@ -61,7 +63,7 @@ bool CloudSpeechClient::PrintHttpBody2()
     }
     else if(digitalRead(button) == HIGH || neverAgain){
         if(segment ==0 && j< 15){
-           Serial.print("recording is too short");
+           display.print("recording is too short");
            return false;
         }
         if(!neverAgain){
@@ -105,13 +107,17 @@ void CloudSpeechClient::preTranscribe(){
 String CloudSpeechClient::Transcribe() {
 
   CloudSpeechClient::preTranscribe();
+  // before recording time, check if the sensor is triggered again
+  if(digitalRead(button) == HIGH){
+    return("$Please wait for the blue light to speak")
+  }
   //recording time :
     digitalWrite(led_1, 1);
     digitalWrite(led_2, 0);
     digitalWrite(led_3, 0);
    bool state = PrintHttpBody2();
    if(!state){
-    return("recording size is too small");
+    return("$recording size is too small");
    }
   digitalWrite(led_1,0);
         digitalWrite(led_3,0);
@@ -128,8 +134,8 @@ unsigned long timeout = 10000; // 15 seconds
 // Wait for the client to be available or until the timeout
 while (!client.available()) {
     if (millis() - startTime > timeout) {
-        Serial.println("Timeout waiting for the client to respond");
-        return "Timeout waiting for the client to respond"; // or handle timeout as needed
+        display.println("Timeout waiting for the client to respond");
+        return "$Timeout waiting for the client to respond"; // or handle timeout as needed
     }
 }
 
@@ -156,9 +162,9 @@ DynamicJsonDocument doc(capacity);
 
 DeserializationError error = deserializeJson(doc, jsonData);
 if (error) {
-  Serial.print(F("deserializeJson() failed: "));
-  Serial.println(error.f_str());
-  return String("Low confidence level, please record again.");
+  display.print(F("deserializeJson() failed: "));
+  display.println(error.f_str());
+  return String("$Error in allocating Document for JSon");
 }
 
 String fullTranscript = "";
@@ -180,15 +186,15 @@ for (JsonObject result : doc["results"].as<JsonArray>()) {
 }
 
 if (lowConfidence) {
-  Serial.println("Low confidence level, please record again.");
-  return String("Low confidence level, please record again.");
+  display.println("Low confidence level, please record again.");
+  return String("$Speech is unclear, please record again.");
 } else if (fullTranscript.length() > 0) {
   Serial.print("Full Transcript: ");
   Serial.println(fullTranscript);
   return fullTranscript;
 } else {
-  Serial.println("No transcripts found");
-  return String("No transcripts found");
+  display.println("No transcripts found");
+  return String("$No transcripts found");
 }
 }
 void CloudSpeechClient::CreateWavHeader(byte* header, int waveDataSize){

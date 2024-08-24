@@ -4,6 +4,10 @@
 #include "HardwareSerial.h"
 #include <WiFiManager.h>
 
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SH110X.h>
+
 #define RXp2 16
 #define TXp2 17
 #define led_1 15
@@ -11,6 +15,13 @@
 #define button 23 //IR Sensor
 
 #define led_3 4
+
+#define i2c_Address 0x3c // Use the I2C address 0x3C
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+#define OLED_RESET -1   // Not connected to a reset pin
+
+Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 //Uses external vars in the network_param.
 const char* ssid;
@@ -62,6 +73,15 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
 
+  display.begin(i2c_Address, true); // Initialize the display with the I2C address
+  display.clearDisplay(); // Clear the display buffer
+
+  display.setTextSize(1); // Set text size
+  display.setTextColor(SH110X_WHITE); // Set text color
+  display.setCursor(0, 0); // Set cursor position
+  display.println("Hello, World!"); // Print text to the display
+  display.display(); // Display the text on the screen
+
   while (!Serial);
 
   // wait for WiFi connection
@@ -75,7 +95,7 @@ void setup() {
   res = wm.autoConnect("LLM Assistant" , "Password");
 
   if(!res){
-    Serial.println("Failed to connect");
+    display.println("Failed to connect");
   }
 
   String ssid_s = wm.getWiFiSSID();
@@ -117,7 +137,7 @@ void setup() {
   
   while (!MySerial.available())
   {
-    Serial.println("Waiting for connection on the second ESP32");
+    display.println("Waiting for connection on the second ESP32");
   }
 
 }
@@ -155,28 +175,17 @@ void loop() {
     // add checking.
     recording = true;
      
-    Serial2.println("\r\nPlease Ask!\r\n");
-    digitalWrite(led_1, 1);
-    digitalWrite(led_2, 0);
-    digitalWrite(led_3, 0);
-    delay(1000);
+    
     
     Serial.println("\r\nRecord start!\r\n");
     //Audio* audio = new Audio(M5STACKFIRE);
     String answer = cloudSpeechClient->Transcribe();
     Serial.println("Recording Completed. Now Processing...");
-    digitalWrite(led_1,0);
-    digitalWrite(led_3,0);
-    digitalWrite(led_2,1);
-    
+
     Serial.println(answer);
     MySerial.println(answer);
     delete cloudSpeechClient;
   
-    //Waits for the speaker to finish talking
-    while(!MySerial.available()){
-      delay(1);
-    }
     // check other edge cases.
     do_nothing = true;
     new_loop = true;
@@ -185,7 +194,6 @@ void loop() {
 
   //NO MOTION DETECTED
   if(digitalRead(button)==HIGH){
-    
-  delay(500);
-}
+    delay(500);
+  }
 }
