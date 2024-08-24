@@ -22,7 +22,7 @@ CloudSpeechClient::CloudSpeechClient(Authentication authentication, const char* 
   Serial.println("Connecting to wifi");
   while (WiFi.status() != WL_CONNECTED){ 
     Serial.println(".");
-    delay(1000);
+    delay(100);
   }
   Serial.print("Connected to wifi");
   
