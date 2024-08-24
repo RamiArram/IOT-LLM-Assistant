@@ -107,7 +107,7 @@ String CloudSpeechClient::Transcribe() {
   CloudSpeechClient::preTranscribe();
   // before recording time, check if the sensor is triggered again
   if(digitalRead(button) == HIGH){
-    return("$Please wait for the blue light to speak")
+    return("$Please wait for the blue light to speak");
   }
   //recording time :
     digitalWrite(led_1, 1);
@@ -149,7 +149,7 @@ while (client.available()) {
     
 }
 
-  Serial.print("My Answer - "); Serial.println(My_Answer);
+  
 
 int position = My_Answer.indexOf('{');
 String jsonData = My_Answer.substring(position);
