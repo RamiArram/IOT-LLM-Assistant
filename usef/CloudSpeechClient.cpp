@@ -162,7 +162,7 @@ DeserializationError error = deserializeJson(doc, jsonData);
 if (error) {
   Serial.print(F("deserializeJson() failed: "));
   Serial.println(error.f_str());
-  return String("$Low confidence level, please record again.");
+  return String("$Error in allocating Document for JSon");
 }
 
 String fullTranscript = "";
