@@ -16,9 +16,8 @@ HardwareSerial MySerial(1);
 const char* ssid = "";
 const char* password = "";
 const char* chatgpt_token = "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";
-const char* temperature = "0";
+const char* temperature = "0.2";
 const char* max_tokens = "4000";
-
 String question = "";
 String message_for_openai = "";
 
@@ -54,11 +53,21 @@ void reset_history(){
 }
 
 void initialize_rag_data() {
+    rag_data[GENERAL] += "the data about our location: ";
+    rag_data[GENERAL] += "we are in TAUB, the computer science faculty in Technion. ";
+    rag_data[GENERAL] += "general data about TAUB: ";
+    rag_data[GENERAL] += "the TAUB library is on floor one. ";
+    rag_data[GENERAL] += "there is a pool table at floor -1. ";
+    // rag_data[GENERAL] += "general data for when asked who built you: ";
+    // rag_data[GENERAL] += "Nidal, Yousef and Rami built you with the help of their instructor Yaniv. ";
+
+
     rag_data[ALGO] = "the data for the algorithms course: ";
     rag_data[ALGO] += "Lectures are on Monday 12:30, Wednesday 14:30. Lecture length is 2 hours. ";
     rag_data[ALGO] += "The course's number is 02340247. ";
     rag_data[ALGO] += "The teaching assistant in charge is Ms. Amit Rozenman Ganz. ";
     rag_data[ALGO] += "The lecturer in charge is Prof. Hadas Shachnai.";
+
 
     rag_data[DS] = "the data for the Data Structures course:";
     rag_data[DS] += "Lectures are held on Sunday 10:30, Tuesday 10:30. Lecture length is 2 hours. ";
@@ -71,12 +80,6 @@ void initialize_rag_data() {
     rag_data[IOT] += "The projects manager is Mr. Tom Sofer. ";
     rag_data[IOT] += "The lecturer in charge is Mr. Itai Dabran. ";
     rag_data[IOT] += "the IOT laboratories are on floor 2 rooms 236 and 231. ";
-
-    rag_data[GENERAL] += "the data about our location: ";
-    rag_data[GENERAL] += "we are in TAUB, the computer science faculty in Technion. ";
-    rag_data[GENERAL] += "general data about TAUB: ";
-    rag_data[GENERAL] += "the TAUB library is on floor one. ";
-    rag_data[GENERAL] += "there is a pool table at floor -1. ";
 }
 
 void reset_rag(){
@@ -258,16 +261,23 @@ void loop()
     if (MySerial.available())
     {
         question = MySerial.readStringUntil('\n');
-    
         question.trim();
 
-        Serial.println("Received Question: " + question);
+        bool reset_history_command = false;
+        bool is_error = false;
 
         toLowerCase(question);
         if(question == "delete history" || question =="reset history"){
+            reset_history_command = true;
             reset_history();
             question = "say 'History has been deleted'";
         }
+
+        if(question[0] == '$'){
+            is_error = true;
+            String error_message = question.substring(1);
+            audio.connecttospeech(error_message.c_str(), "en");
+        }else{
 
         String context = find_question_context(question);
         bool question_rag_data_included[N];
@@ -289,20 +299,20 @@ void loop()
         String instructions;
 
         instructions += "Instructions: ";
-        instructions += "you are an LLM assistant. ";
+        instructions += "you are an LLM assistant in TAUB and your name is Aura. ";
         instructions += "I will provide our conversation history, and some data that may be relevant to our conversation. ";
         instructions += "if the conversation is directly related to the data I provided, use it to answer. ";
         instructions += "keep your answer under 25 words. ";
         instructions += "no need to add 'You:' before your answer. ";
         instructions += "be concise with you answer. ";
         instructions += "don't ask question that are unrelated to the current conversation. ";
+        instructions += "instead of saying that the data provided doesn't specify something, say that you don't have enough information to answer. ";
 
         message += "Conversation History: " + history;
 
         message += "Data: " + rag_data[GENERAL] + context;
 
         message += "Current Conversation: Me: " + question + " ";
-
 
         Serial.println("Message for ChatGpt:\n" + message);
 
@@ -321,7 +331,7 @@ void loop()
             String escapedMessage = message;
             escapedMessage.replace("\"", "\\\"");
 
-            String payload = String("{\"model\": \"gpt-3.5-turbo\", \"messages\": [") +
+            String payload = String("{\"model\": \"gpt-4\", \"messages\": [") +
                             "{\"role\": \"system\", \"content\": \"" + instructions + "\"}, " +
                             "{\"role\": \"user\", \"content\": \"" + escapedMessage + "\"}], " +
                             "\"temperature\": " + temperature + ", " +
@@ -348,7 +358,6 @@ void loop()
 
                 audio.connecttospeech(answer.c_str(), "en");
 
-
                 String question_and_answer = "Me: " + question + " ";
                 question_and_answer += "You: " + answer + " ";
                 chat_history[start] = question_and_answer;
@@ -366,9 +375,14 @@ void loop()
         else {
             Serial.printf("[HTTPS] Unable to connect\n");
         }
-    question = "";
-    message = "";
+
+        if(reset_history_command){
+            reset_history();
+        }
+        question = "";
+        message = "";
+        }
+        
     }
     audio.loop();
 }
-
