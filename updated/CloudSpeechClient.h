@@ -22,6 +22,7 @@ public:
   CloudSpeechClient(Authentication authentication);
   ~CloudSpeechClient();
   String Transcribe();
+  static const int segmentValue = 5; // how many iterations
   static const int wavDataSize = 90000;                   // It must be multiple of dividedWavDataSize. Recording time is about 1.9 second.
   static const int dividedWavDataSize = i2sBufferSize/4;
   char** wavData;                                         // It's divided. Because large continuous memory area can't be allocated in esp32.
