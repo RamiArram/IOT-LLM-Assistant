@@ -12,7 +12,7 @@
 #define led_1 15
 #define led_2 2
 const char* chatgpt_token = "Your_ChatGPT_Token";
-CloudSpeechClient::CloudSpeechClient(Authentication authentication) 
+CloudSpeechClient::CloudSpeechClient(Authentication authentication, const char* ssid, const char* password) 
 {
   this->authentication = authentication;
   wavData = new char*[wavDataSize/dividedWavDataSize];
@@ -111,7 +111,7 @@ String CloudSpeechClient::Transcribe() {
     digitalWrite(led_3, 0);
    bool state = PrintHttpBody2();
    if(!state){
-    return("recording size is too small");
+    return("$recording size is too small");
    }
   digitalWrite(led_1,0);
         digitalWrite(led_3,0);
@@ -129,7 +129,7 @@ unsigned long timeout = 10000; // 15 seconds
 while (!client.available()) {
     if (millis() - startTime > timeout) {
         Serial.println("Timeout waiting for the client to respond");
-        return "Timeout waiting for the client to respond"; // or handle timeout as needed
+        return "$Timeout waiting for the client to respond"; // or handle timeout as needed
     }
 }
 
@@ -158,7 +158,7 @@ DeserializationError error = deserializeJson(doc, jsonData);
 if (error) {
   Serial.print(F("deserializeJson() failed: "));
   Serial.println(error.f_str());
-  return String("Low confidence level, please record again.");
+  return String("$Low confidence level, please record again.");
 }
 
 String fullTranscript = "";
@@ -181,14 +181,14 @@ for (JsonObject result : doc["results"].as<JsonArray>()) {
 
 if (lowConfidence) {
   Serial.println("Low confidence level, please record again.");
-  return String("Low confidence level, please record again.");
+  return String("$Low confidence level, please record again.");
 } else if (fullTranscript.length() > 0) {
   Serial.print("Full Transcript: ");
   Serial.println(fullTranscript);
   return fullTranscript;
 } else {
   Serial.println("No transcripts found");
-  return String("No transcripts found");
+  return String("$No transcripts found");
 }
 }
 void CloudSpeechClient::CreateWavHeader(byte* header, int waveDataSize){
