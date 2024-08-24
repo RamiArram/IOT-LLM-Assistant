@@ -7,7 +7,7 @@
 #define USE_SERIAL Serial
 #include <Arduino.h>
 const char* chatgpt_token = "Your_ChatGPT_Token";
-CloudSpeechClient::CloudSpeechClient(Authentication authentication) 
+CloudSpeechClient::CloudSpeechClient(Authentication authentication, const char* ssid, const char* password) 
 {
   this->authentication = authentication;
   wavData = new char*[wavDataSize/dividedWavDataSize];

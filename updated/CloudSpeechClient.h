@@ -19,7 +19,7 @@ class CloudSpeechClient {
   void CreateWavHeader(byte* header, int waveDataSize);
 
 public:
-  CloudSpeechClient(Authentication authentication);
+  CloudSpeechClient(Authentication authentication, const char* ssid, const char* password);
   ~CloudSpeechClient();
   String Transcribe();
   static const int segmentValue = 5; // how many iterations
