@@ -1,9 +1,9 @@
 #include "CloudSpeechClient.h"
-#include "network_param.h"
 #include <base64.h>
 #include <ArduinoJson.h>
 #include "WiFi.h"
 #include <HTTPClient.h>
+#include "network_param.h"
 #define USE_SERIAL Serial
 #include <Arduino.h>
 const char* chatgpt_token = "Your_ChatGPT_Token";
@@ -14,7 +14,13 @@ CloudSpeechClient::CloudSpeechClient(Authentication authentication)
   for (int i = 0; i < wavDataSize/dividedWavDataSize; ++i) wavData[i] = new char[dividedWavDataSize];
   i2s = new I2S(ICS43434);
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) delay(1000);
+  Serial.println("Connecting to wifi");
+  while (WiFi.status() != WL_CONNECTED){ 
+    Serial.println(".");
+    delay(1000);
+  }
+  Serial.print("Connected to wifi");
+  
   client.setCACert(root_ca); // Set your root CA certificate here
   client.setInsecure();      // Accept any SSL certificate, including self-signed
 
@@ -34,7 +40,7 @@ CloudSpeechClient::~CloudSpeechClient() {
 void CloudSpeechClient::PrintHttpBody2()
 {
   
-  for(int segment = 0; segment<5;segment++){
+  for(int segment = 0; segment<segmentValue;segment++){
      for (int j = 0; j < wavDataSize/dividedWavDataSize; ++j) {
       i2s->Read(i2sBuffer, i2sBufferSize);
       for (int i = 0; i < i2sBufferSize/8; ++i) {
@@ -58,11 +64,11 @@ String CloudSpeechClient::Transcribe() {
 
   String HttpBody1 = "{\"config\":{\"encoding\":\"LINEAR16\",\"sampleRateHertz\":16000,\"languageCode\":\"en-US\"},\"audio\":{\"content\":\"";
   String HttpBody3 = "\"}}\r\n\r\n";
-  int httpBody2Length = ((wavDataSize*5 ) + sizeof(paddedHeader)) * 4 / 3; // 4/3 is from base64 encoding
+  int httpBody2Length = ((wavDataSize*segmentValue) + sizeof(paddedHeader)) * 4 / 3; // 4/3 is from base64 encoding
   String ContentLength = String(HttpBody1.length() + httpBody2Length + HttpBody3.length());
   String HttpHeader;
   Serial.print("WavdataSize and padded header sizes:");
-  Serial.print(wavDataSize*4);
+  Serial.print(wavDataSize*segmentValue);
   Serial.print(sizeof(paddedHeader));
 
   HttpHeader = String("POST /v1/speech:recognize?key=") + ApiKey
@@ -70,7 +76,7 @@ String CloudSpeechClient::Transcribe() {
 
   client.print(HttpHeader);
   client.print(HttpBody1);
-  CreateWavHeader(paddedHeader,wavDataSize*4);
+  CreateWavHeader(paddedHeader,wavDataSize*segmentValue);
   String enc = base64::encode(paddedHeader, 48);
   enc.replace("\n", "");
   client.print(enc);
@@ -98,7 +104,6 @@ String CloudSpeechClient::Transcribe() {
   const size_t capacity = 2048; // Adjust capacity as needed
   DynamicJsonDocument doc(capacity);
 
-  
   DeserializationError error = deserializeJson(doc, jsonData);
   if (error) {
     Serial.print(F("deserializeJson() failed: "));
@@ -106,14 +111,23 @@ String CloudSpeechClient::Transcribe() {
     return String("");
   }
 
-  const char* transcript = doc["results"][0]["alternatives"][0]["transcript"];
+  String fullTranscript = "";
 
-  if (transcript) {
-    Serial.print("Transcript: ");
-    Serial.println(transcript);
-    return String(transcript);
+  // Iterate over the results array and concatenate all transcripts
+  for (JsonObject result : doc["results"].as<JsonArray>()) {
+    const char* transcript = result["alternatives"][0]["transcript"];
+    if (transcript) {
+      fullTranscript += String(transcript);
+      fullTranscript += " "; // Add a space between each transcript
+    }
+  }
+
+  if (fullTranscript.length() > 0) {
+    Serial.print("Full Transcript: ");
+    Serial.println(fullTranscript);
+    return fullTranscript;
   } else {
-    Serial.println("Transcript not found");
+    Serial.println("No transcripts found");
     return String("");
   }
 }
