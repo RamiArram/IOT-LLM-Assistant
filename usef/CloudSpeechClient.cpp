@@ -105,6 +105,10 @@ void CloudSpeechClient::preTranscribe(){
 String CloudSpeechClient::Transcribe() {
 
   CloudSpeechClient::preTranscribe();
+  // before recording time, check if the sensor is triggered again
+  if(digitalRead(button) == HIGH){
+    return("$Please wait for the blue light to speak")
+  }
   //recording time :
     digitalWrite(led_1, 1);
     digitalWrite(led_2, 0);
@@ -181,7 +185,7 @@ for (JsonObject result : doc["results"].as<JsonArray>()) {
 
 if (lowConfidence) {
   Serial.println("Low confidence level, please record again.");
-  return String("$Low confidence level, please record again.");
+  return String("$Speech is unclear, please record again.");
 } else if (fullTranscript.length() > 0) {
   Serial.print("Full Transcript: ");
   Serial.println(fullTranscript);
