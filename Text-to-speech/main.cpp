@@ -17,7 +17,7 @@ HardwareSerial MySerial2(2);
 
 const char* ssid = "";
 const char* password = "";
-const char* chatgpt_token = "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";
+const char* chatgpt_token = "";
 const char* temperature = "0.2";
 const char* max_tokens = "4000";
 String question = "";
