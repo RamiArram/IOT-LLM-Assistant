@@ -1,3 +1,4 @@
+
 #include "CloudSpeechClient.h"
 #include "WiFi.h"
 #include "HardwareSerial.h"
@@ -32,11 +33,13 @@ String wifiname = "";
 String wifipass = "";
 bool once = true;
 bool recording = false;
-bool do_nothing = false;
+bool processing = false;
 bool new_loop = true;
 unsigned long startTime1 = 0;
 unsigned long timeout1 = 0;
 HardwareSerial MySerial(1);
+HardwareSerial MySerial2(2);
+
 
 String createWifiPasswordString(const char* wifiName, const char* password) {
     // Create the formatted string
@@ -75,6 +78,7 @@ void setup() {
   pinMode(led_3, OUTPUT);
   Serial.begin(115200);
   MySerial.begin(115200, SERIAL_8N1, RXp2, TXp2);
+  MySerial2.begin(9600, SERIAL_8N1, 18, 19);
   
   Serial.begin(115200);
 
@@ -108,7 +112,7 @@ void setup() {
   }
   
   
-
+  digitalWrite(led_3, 0);
   // Stop blinking LED and turn it on solid once connected
   digitalWrite(led_1, HIGH);
  displayMonitor("Connected to Wifi");
@@ -141,7 +145,7 @@ void setup() {
   String wifi_creds = createWifiPasswordString(ssid1, password1);
 
   Serial.println("WIFI CREDS " + wifi_creds);
-  MySerial.println(wifi_creds);
+  MySerial.println("$#" + wifi_creds);
   
   while (!MySerial.available()) {
     display.println("Waiting for connection on the second ESP32");
@@ -159,37 +163,21 @@ void loop() {
   }
   if (new_loop) {
     recording = false;
-    do_nothing = false;
+    processing = false;
     new_loop = false;
-
   
-    Serial.print("Hold sensor and wait for the blue light to speak");
+    Serial.print("Hold Sensor and Wait for the Blue Light to Speak");
     displayMonitor("Ask me anything<3");
      if (WiFi.status() != WL_CONNECTED){ 
-     displayMonitor("Connection to Wifi lost, Please try connecting again");
+     displayMonitor("Connection to Wifi Lost, Please try connecting again");
      ESP.restart();
-      
   }
   }
 
   // MOTION DETECTED
   if (digitalRead(button) == LOW) {
-    String ssid_s = wm.getWiFiSSID();
-    String password_s = wm.getWiFiPass();
-
-    password1 = password_s.c_str();
-
-    String temp = String(password1);
-
-    temp = cleanString(temp);
-
-    wifipass = temp;
-    wifiname = ssid_s;
-
-    Serial.print("WIFI " + String(ssid1) + "PASS + " + String(password1));
-    Serial.print("WIFI " + wifiname + "PASS " + wifipass);
-
-    if (!recording && !do_nothing ) {
+    
+    if (!recording && !processing ) {
        
       CloudSpeechClient* cloudSpeechClient = new CloudSpeechClient(USE_APIKEY, wifiname.c_str(), wifipass.c_str());
       recording = true;
@@ -200,21 +188,26 @@ void loop() {
     
       Serial.println("Recording Completed. Now Processing...");
       String answerCut = answer;
+      bool is_error = false;
       if (answer[0] == '$') {
+        is_error = true;
         String error_message = answerCut.substring(1);
         displayMonitor(error_message);
       }
       Serial.println(answer);
       MySerial.println(answer);
-     
+
+      if(is_error){
+        delay(2000);
+      }
       
       delete cloudSpeechClient;
       if (WiFi.status() != WL_CONNECTED){ 
-     displayMonitor("Connection to Wifi lost, Please try connecting again");
+     displayMonitor("Connection to Wifi Lost, Please try connecting again");
      ESP.restart();
       }
       
-      do_nothing = true;
+      processing = true;
       new_loop = true;
       
     }
@@ -223,7 +216,5 @@ void loop() {
   // NO MOTION DETECTED
   if (digitalRead(button) == HIGH) {
     delay(500);
-    
-    
   }
 }

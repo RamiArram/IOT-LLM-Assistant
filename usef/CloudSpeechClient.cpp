@@ -11,7 +11,7 @@
 #define led_3 4
 #define led_1 15
 #define led_2 2
-const char* chatgpt_token = "Your_ChatGPT_Token";
+
 CloudSpeechClient::CloudSpeechClient(Authentication authentication, const char* ssid, const char* password) 
 {
   this->authentication = authentication;
@@ -107,7 +107,7 @@ String CloudSpeechClient::Transcribe() {
   CloudSpeechClient::preTranscribe();
   // before recording time, check if the sensor is triggered again
   if(digitalRead(button) == HIGH){
-    return("$Please wait for the blue light to speak");
+    return("$Please Wait for the Blue Light to Speak");
   }
   //recording time :
     digitalWrite(led_1, 1);
@@ -115,7 +115,7 @@ String CloudSpeechClient::Transcribe() {
     digitalWrite(led_3, 0);
    bool state = PrintHttpBody2();
    if(!state){
-    return("$recording size is too small");
+    return("$Recording Size is Too Small");
    }
   digitalWrite(led_1,0);
         digitalWrite(led_3,0);
@@ -133,7 +133,7 @@ unsigned long timeout = 10000; // 15 seconds
 while (!client.available()) {
     if (millis() - startTime > timeout) {
         Serial.println("Timeout waiting for the client to respond");
-        return "$Timeout waiting for the client to respond"; // or handle timeout as needed
+        return "$Timeout Waiting for the Client to Respond"; // or handle timeout as needed
     }
 }
 
@@ -162,7 +162,7 @@ DeserializationError error = deserializeJson(doc, jsonData);
 if (error) {
   Serial.print(F("deserializeJson() failed: "));
   Serial.println(error.f_str());
-  return String("$Error in allocating Document for JSon");
+  return String("$Error in Allocating Document for JSon");
 }
 
 String fullTranscript = "";
@@ -185,14 +185,14 @@ for (JsonObject result : doc["results"].as<JsonArray>()) {
 
 if (lowConfidence) {
   Serial.println("Low confidence level, please record again.");
-  return String("$Speech is unclear, please record again.");
+  return String("$Speech is Unclear, Please Record Again.");
 } else if (fullTranscript.length() > 0) {
   Serial.print("Full Transcript: ");
   Serial.println(fullTranscript);
   return fullTranscript;
 } else {
   Serial.println("No transcripts found");
-  return String("$No transcripts found");
+  return String("$I Couldn't Catch That, Please Record Again.");
 }
 }
 void CloudSpeechClient::CreateWavHeader(byte* header, int waveDataSize){
