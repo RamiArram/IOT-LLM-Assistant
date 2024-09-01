@@ -12,9 +12,11 @@
 #include <WiFiManager.h>
 
 HardwareSerial MySerial(1);
+HardwareSerial MySerial2(2);
 
-const char* ssid = "DOGGO";
-const char* password = "ramiharami";
+
+const char* ssid = "";
+const char* password = "";
 const char* chatgpt_token = "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";
 const char* temperature = "0.2";
 const char* max_tokens = "4000";
@@ -43,7 +45,29 @@ bool history_rag_data_included[CHAT_HISTORY_SIZE][N] = {false};
 int start = 0;
 
 
+
+int countWords(const String& str) {
+    int count = 0;
+    bool inWord = false;
+    
+    for (char ch : str) {
+        if (ch != ' ' && ch != '\t' && ch != '\n') {
+            if (!inWord) {
+                // Start of a new word
+                inWord = true;
+                ++count;
+            }
+        } else {
+            // End of the current word
+            inWord = false;
+        }
+    }
+    
+    return count;
+}
+
 void speakLongText(String longText) {
+  int words = countWords(longText);
   const int wordsPerChunk = 10; // Maximum number of words per chunk
   std::vector<String> chunks;
   String currentChunk = "";
@@ -87,8 +111,9 @@ void speakLongText(String longText) {
       audio.loop();
     }
   }
+    // signals that processing is done
+  MySerial2.println(words);
 }
-
 
 
 void reset_history(){
@@ -243,30 +268,12 @@ String cleanString(const String& input) {
     return result;
 }
 
-int countWords(const String& str) {
-    int count = 0;
-    bool inWord = false;
-    
-    for (char ch : str) {
-        if (ch != ' ' && ch != '\t' && ch != '\n') {
-            if (!inWord) {
-                // Start of a new word
-                inWord = true;
-                ++count;
-            }
-        } else {
-            // End of the current word
-            inWord = false;
-        }
-    }
-    
-    return count;
-}
 
 void setup()
 {
     Serial.begin(115200);
     MySerial.begin(115200, SERIAL_8N1, 16, 17);
+    MySerial2.begin(9600, SERIAL_8N1, 18, 19);
 
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
@@ -319,7 +326,7 @@ void setup()
 
     audio.setPinout(I2S_BCLK, I2S_LRC, I2S_DOUT);
     audio.setVolume(100);
-
+    
     initialize_rag_data();
 }
 
@@ -341,14 +348,50 @@ void loop()
         }
 
         if(question[0] == '$'){
-            is_error = true;
-            String error_message = question.substring(1);
-            audio.connecttospeech(error_message.c_str(), "en");
-            while (audio.isRunning()) {
-                audio.loop();
-            }
-        }else{
+            if(question[1] == '#'){
+                // wifi credentials
 
+                String wifi_creds = question.substring(2);
+                const char* wifi_creds_char = wifi_creds.c_str(); // Convert String to const char*
+
+                if(!extractWifiAndPassword(wifi_creds_char ,ssid,password)){
+                Serial.println("FAILED CONNECTING TO WIFI");
+                }
+
+                String temp = String(password);
+
+                temp = cleanString(temp);
+
+                password = temp.c_str();
+
+                Serial.print(ssid);
+                Serial.print(password);
+                WiFi.begin(ssid, password);
+
+                int timeout = 15;
+                while (WiFi.status() != WL_CONNECTED && timeout>0)
+                {
+                    delay(1000);
+                    Serial.print(".");
+                    timeout-- ;
+                }
+                if(timeout == 0){
+                    MySerial2.print('#');
+                }
+            }else{
+                // error message
+                is_error = true;
+                String error_message = question.substring(1);
+                audio.connecttospeech(error_message.c_str(), "en");
+                while (audio.isRunning()) {
+                    audio.loop();
+                }
+                int words = countWords(error_message);
+                MySerial2.println(words);
+            }
+
+        }else{
+            // normal question ( not error/credentials)
         String context = find_question_context(question);
         bool question_rag_data_included[N];
         for(int i=0;i<N;i++){
@@ -426,14 +469,7 @@ void loop()
                 String answer = doc["choices"][0]["message"]["content"];
                 Serial.print("Answer : "); Serial.println(answer);
 
-                if(countWords(answer) <= 10){
-                    audio.connecttospeech(answer.c_str(), "en");
-                    while (audio.isRunning()) {
-                        audio.loop();
-                    }
-                } else{
-                    speakLongText(answer);
-                }
+                speakLongText(answer);
 
                 String question_and_answer = "Me: " + question + " ";
                 question_and_answer += "You: " + answer + " ";
