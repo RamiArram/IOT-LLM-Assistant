@@ -25,9 +25,9 @@ Features:
 - Speech to Text
 - Interaction with OpenAI.
 - RAG: retrieves relevant context in local database based on key words in an efficient way using data structures, and formats prompt for OpenAI accordingly
-- History: saves last 5 questions and answers with option to reset through “Reset History” or “Delete History” voice command.
+- History: saves last 5 questions and answers with option to reset through “Reset History” or “Delete History” voice command
 - WIFI connection through access point
-- Sensor to record audio for a maximum of 15 seconds.
+- Sensor to record audio for a maximum of 15 seconds (can be modified to any duration)
 - On/Off Button
 - LED to signal different states
 - OLED for displaying different states and errors
