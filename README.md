@@ -1,12 +1,4 @@
 # IOT-LLM-Assistant
 
-
-If you're using PlatformIO the following dependencies are needed in the Text2Speech ESP32 part:
-lib_deps = 
-	esphome/ESP32-audioI2S@^2.0.7
-	adafruit/Adafruit BusIO@^1.16.1
-	bblanchon/ArduinoJson@^7.1.0
-	https://github.com/tzapu/WiFiManager/archive/refs/heads/master.zip
-
-
-OLED : https://github.com/adafruit/Adafruit_SH110x/tree/master
+CloudTranscribtion folder includes files that record a .wav file and using the googlecloud.ino the file is uploaded to the cloud storage and sent to the google Speech to text API.
+This folder was not used in the final project.
