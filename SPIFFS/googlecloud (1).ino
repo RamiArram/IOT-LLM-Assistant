@@ -11,11 +11,11 @@
 #include <ArduinoJson.h>  // Include ArduinoJson library
 
 
-const char* ssid = "DOGGO ";
-const char* password = "ramiharami";
+const char* ssid = "";
+const char* password = "";
 const char* tokenUrl = "https://oauth2.googleapis.com/token";
-const char* privateKeyPem = "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCSDCbrUjxG/LKt\n9A/ColKzHPYhI37ASSzv+I8n4UALaV4bnOj5fcPRqFFX2H2/t5U1Zom9ElVFRfCr\nxNCHBNqpWq1SZV+ZuPXQslNxH70VPk87/+3xPZI/4CtzRmdBiayUsNNDHINFfiWJ\nuxGn+u2nTJjyk9TnMHmzr9Fn+Vv650lcXEjzPzc5gjxzpudDM9IjXYh/efNUi5vE\nYbPvh6oM5Qw8wEK2WDNs9L3FbV+SJP3kTOkBdVWEqStHy2lEge2z3XDgzyTRWR3L\nsIWBh05mjywG/Mx5/dDOilHibp+e2v3uuybQjZv+Q1NqTY+cu9t2njwLy2fmsVdR\n5P3nWOClAgMBAAECggEAHvbynXv/CbH0FEult8eArzcZvCbxbcVWAL77YyIv2PuL\nF2GqR5NxnBcKwAxHhQlgWkUWOP8VEy3j/BcreyT9U2DFVK3nmgkMHSZh6J8pEML4\nO6lkgnxicKaPr84igFO3QoNHF3iJIIfBX7VI5guerZTg7LWJM0ck1oMVa+0Domtr\nNBgEkQ64LU/NYZhn1WQaOyDifCybGmUi7I6J+BvCDjf6iZP95RrcQrYqb4WF/PGv\nag54LkpZ7PP7E3i3bT9JGhdQb+OqWf4Uwmmziq498ZIJ9WNZvvbzPE9M1Te8XwY0\n2/NXpYa9RogJBu38Pk2ijDZetPt88Le1rvXLlCI5gQKBgQDDaD+qJEbcoPTo7TuC\nZBGXl/rkrGJgNWpKQULNKl947Ajt4jlccdIHq8PIvYoDPYWNIUh9ivWuT36m5H3k\nQQUmwnggnhru8/3ka8T8GEGw5DtAvLh4gSl76zERp8iSdyyJ9/zcBWOFOKcrpFug\neIxbGdkVIUiu9z6HgBKkFRvCoQKBgQC/VaTQ5tLkz7as1jeiJzpCqkexYiudYjm+\nG7egNo+jmLAunJXVIbUbtx+6ZLCmEqJrJbKhucXc1YLNzH0Xih24yVWkuvkl7y7F\nlv+/pOVInYDdGIj9zDGlGdYuQZo2X6k5Bd2aDj0bJt0ucX1c7Iwx3GmRfeXvvh2h\neJ9vi1jjhQKBgCBy+FeFrKrIo8LmWkJ94Zn95/D/W1rEpADus2wkhDQtZhIyxfm/\nAPS7Jkj4iKmfFsVn6ITIhaHLm6mVOf6keXmFQ7OO7cQOinPbHZwLXyVD0T8f17ZT\nJJNqa/yVky4XUjMbFkdnMa6WyNPreDe+rPgX47+phktfzWds8iuDQdfhAoGBAKa8\nJIejTs70r9VITGzzUFL9/sH2sdlR2s3va4KjaWMAUTAdZni4ChJf77dHvaTLglxr\nGpLSyDlcmsNq2uvjgWkhko+eHDZRi+nGX5KLSP+RudVyZxb8lZqxvDLNGm0dyeMW\nWHnCxL9fi8nIPp32yWk+EYUnOHRGsZ2f9xiGT2zdAoGAeYx7oSh/X+de0/2Y3TOj\noQcSpF3+NEZJZlrflSnXxvFVItvvnFF8K+ThLpoN28t/WRwqyv0/WUEqbFFH2O7p\nHeBjwB26vsQGjBtOpypRs+AEDpcFr2R785GEtPSKzzUsjBF7tWUS0TMfs6F5NLJ+\nLeHtxosivhTgLo7+BDR+lu0=\n-----END PRIVATE KEY-----\n";
-const char* serviceAccountEmail = "storage-bucket-view@centered-cable-427011-t5.iam.gserviceaccount.com";
+const char* privateKeyPem = "";
+const char* serviceAccountEmail = "";
 const char* bucketName = "storeaudios";  // Replace with your bucket name
 const char* objectName = "recording.wav";  // The name of the file in the bucket
 const char* spiffsFileName = "/recording.wav";  // The file path on the SD card
