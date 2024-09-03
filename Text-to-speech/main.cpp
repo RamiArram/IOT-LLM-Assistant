@@ -3,9 +3,6 @@
 #include <HTTPClient.h>
 #include <SPI.h>
 #include <Wire.h>
-#include <SD.h>
-#include <SD_MMC.h>
-#include <SPIFFS.h>
 #include <FFat.h>
 #include <ArduinoJson.h>
 #include "Audio.h"
