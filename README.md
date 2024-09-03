@@ -6,13 +6,11 @@ This folder was not used in the final project.
 
 
 Project Definition:
-
 LLM assistant named Aura in TAUB faculty of Computer Science.
 You can ask about anything! Including specifics about your courses in TAUB!
 The current model includes data about Taub in general, the algorithms course and IOT to name a few.
 
 Use Instructions:
-
 Use smartphone to connect to the “LLM Assistant” access point.
 Hold hand above sensor to record and remove it to stop.
 Check OLED display for messages and instructions.
@@ -22,7 +20,6 @@ Different LED states:
 -	Solid Green: processing
 
 Features:
-
 - Text to Speech
 - Speech to Text
 - Interaction with OpenAI.
