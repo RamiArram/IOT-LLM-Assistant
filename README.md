@@ -5,6 +5,7 @@ This folder was not used in the final project.
 
 
 
+
 Project Definition:
 LLM assistant named Aura in TAUB faculty of Computer Science.
 You can ask about anything! Including specifics about your courses in TAUB!
