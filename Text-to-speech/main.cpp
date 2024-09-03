@@ -3,7 +3,6 @@
 #include <HTTPClient.h>
 #include <SPI.h>
 #include <Wire.h>
-#include <FFat.h>
 #include <ArduinoJson.h>
 #include "Audio.h"
 #include <WiFiManager.h>
